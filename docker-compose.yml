@@ -1,0 +1,64 @@
+services:
+  db:
+    image: postgres:16
+    container_name: marketplace-postgres
+    environment:
+      POSTGRES_USER: marketplace
+      POSTGRES_PASSWORD: marketplace
+      POSTGRES_DB: marketplace
+    ports:
+      - "127.0.0.1:${MARKETPLACE_DB_HOST_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U marketplace -d marketplace"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - marketplace-postgres-data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    container_name: marketplace-api
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/marketplace
+      SPRING_DATASOURCE_USERNAME: marketplace
+      SPRING_DATASOURCE_PASSWORD: marketplace
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      # Listen on the container network; the published host port remains loopback-only.
+      SERVER_ADDRESS: 0.0.0.0
+      SERVER_PORT: 8080
+      # Shell/.env overrides are accepted; the fallback is rejected by non-development profiles.
+      JWT_SECRET: ${JWT_SECRET:-dGhpcyBpcyBhIHZlcnkgbG9uZyBzZWNyZXQga2V5IGZvciBqd3QgdG9rZW4gZ2VuZXJhdGlvbiB0aGF0IGlzIGF0IGxlYXN0IDI1NiBiaXRz}
+      PAYMENT_GATEWAY: ${PAYMENT_GATEWAY:-mock}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STORAGE_LOCAL_ROOT: /var/marketplace/files
+    ports:
+      - "127.0.0.1:${MARKETPLACE_API_HOST_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    volumes:
+      - marketplace-file-data:/var/marketplace/files
+
+  # web:
+  #   build: ./frontend
+  #   depends_on:
+  #     api:
+  #       condition: service_healthy
+  #   ports:
+  #     - "3000:80"
+
+volumes:
+  marketplace-postgres-data:
+  marketplace-file-data:

@@ -1,0 +1,80 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: service-marketplace-platform
+
+  servlet:
+    multipart:
+      max-file-size: 8MB
+      max-request-size: 25MB
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/marketplace}
+    username: ${SPRING_DATASOURCE_USERNAME:marketplace}
+    password: ${SPRING_DATASOURCE_PASSWORD:marketplace}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    root: INFO
+    com.relix.marketplace: DEBUG
+    org.flywaydb: INFO
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: 7200
+  refresh-token-expiration: 604800
+
+payment:
+  gateway: ${PAYMENT_GATEWAY:mock}
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY:}
+  publishable-key: ${STRIPE_PUBLISHABLE_KEY:}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+
+storage:
+  provider: ${STORAGE_PROVIDER:local}
+  local:
+    root: ${STORAGE_LOCAL_ROOT:/var/marketplace/files}
+  public-base-url: ${STORAGE_PUBLIC_BASE_URL:}
+
+images:
+  max-source-bytes: 8388608
+  max-per-ticket: 8
+  max-per-deliverable: 8
+  thumb-width: 400
+  large-width: 1400
+  max-source-pixels: 40000000
+  max-source-dimension: 12000
+  recent-work-limit: 6
+  recent-work-per-ticket: 2
+  orphan-retention: 24h
+  require-deliverable-on-deliver: ${IMAGES_REQUIRE_DELIVERABLE_ON_DELIVER:false}

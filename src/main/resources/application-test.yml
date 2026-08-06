@@ -1,0 +1,21 @@
+server:
+  address: 127.0.0.1
+
+spring:
+  jpa:
+    show-sql: false
+
+  flyway:
+    locations: classpath:db/migration
+
+logging:
+  level:
+    root: WARN
+    com.relix.marketplace: INFO
+
+payment:
+  gateway: mock
+
+storage:
+  local:
+    root: ${STORAGE_LOCAL_ROOT:${java.io.tmpdir}/service-marketplace-test-files-${random.uuid}}

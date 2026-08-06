@@ -1,0 +1,20 @@
+CREATE TABLE payments (
+    id BIGSERIAL PRIMARY KEY,
+    order_id BIGINT NOT NULL REFERENCES orders(id),
+    request_id VARCHAR(64) NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'SUCCEEDED',
+    paid_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uk_payments_order UNIQUE(order_id),
+    CONSTRAINT chk_payment_status CHECK (status IN ('SUCCEEDED'))
+);
+
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS chk_order_status;
+ALTER TABLE orders ADD CONSTRAINT chk_order_status
+    CHECK (status IN ('PENDING', 'PAID', 'CONFIRMED', 'CANCELLED', 'COMPLETED'));
+
+CREATE TRIGGER update_payments_updated_at
+    BEFORE UPDATE ON payments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

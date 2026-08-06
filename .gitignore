@@ -1,0 +1,28 @@
+# ===== Build =====
+target/
+
+# ===== IDE =====
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Logs =====
+*.log
+
+# ===== Env / Local =====
+*.env
+.env
+!.env.example
+application-local.yml
+.marketplace-files/
+
+# ===== Maven =====
+.mvn/wrapper/maven-wrapper.jar
+
+# ===== Testcontainers =====
+# testcontainers.properties is tracked for cross-platform Docker support

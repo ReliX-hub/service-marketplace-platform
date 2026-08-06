@@ -1,0 +1,35 @@
+server:
+  # The checked-in development JWT key is safe only when the process is local.
+  address: ${SERVER_ADDRESS:127.0.0.1}
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/marketplace
+    username: marketplace
+    password: marketplace
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+
+  jpa:
+    show-sql: true
+
+  flyway:
+    locations: classpath:db/migration,classpath:db/seed
+
+logging:
+  level:
+    com.relix.marketplace: DEBUG
+    org.hibernate.SQL: DEBUG
+
+jwt:
+  secret: dGhpcyBpcyBhIHZlcnkgbG9uZyBzZWNyZXQga2V5IGZvciBqd3QgdG9rZW4gZ2VuZXJhdGlvbiB0aGF0IGlzIGF0IGxlYXN0IDI1NiBiaXRz
+
+management:
+  endpoint:
+    health:
+      show-details: always
+
+storage:
+  local:
+    root: ${STORAGE_LOCAL_ROOT:.marketplace-files}

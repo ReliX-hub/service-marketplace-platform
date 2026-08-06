@@ -1,0 +1,12 @@
+.git
+.gitignore
+.gitattributes
+.idea
+*.iml
+target
+*.log
+*.md
+scripts
+src/test
+.dockerignore
+.env
