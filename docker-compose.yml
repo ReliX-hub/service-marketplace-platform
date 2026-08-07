@@ -51,13 +51,18 @@ services:
     volumes:
       - marketplace-file-data:/var/marketplace/files
 
-  # web:
-  #   build: ./frontend
-  #   depends_on:
-  #     api:
-  #       condition: service_healthy
-  #   ports:
-  #     - "3000:80"
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: /api
+        VITE_ENABLE_DEMO_FALLBACK: "true"
+    container_name: marketplace-web
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${MARKETPLACE_WEB_HOST_PORT:-3000}:80"
 
 volumes:
   marketplace-postgres-data:
