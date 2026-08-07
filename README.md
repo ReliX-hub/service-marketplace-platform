@@ -1,6 +1,6 @@
 # Service Marketplace Platform
 
-Service Marketplace Platform is a Spring Boot backend for a two-sided marketplace for local and remote services. Clients can publish task requests with budgets and requirements; workers can publish service offers backed by profiles and verified credentials. Both directions converge on the same application, matching, payment, delivery, approval, settlement, and review workflow.
+Service Marketplace Platform is a full-stack two-sided marketplace for local and remote services. Clients can publish task requests with budgets and requirements; workers can publish service offers backed by profiles and verified credentials. Both directions converge on the same application, matching, payment, delivery, approval, settlement, and review workflow.
 
 The project focuses on the backend problems that make a marketplace more than CRUD: resource ownership, qualification rules, transactional matching, an escrow-style state machine, private delivery evidence, safe image processing, asynchronous payment confirmation, webhook idempotency, refunds, rating aggregation, audit trails, and stable frontend contracts.
 
@@ -75,6 +75,7 @@ Stripe Connect payouts are intentionally out of scope. The current settlement mo
 ## Technology
 
 - Java 17 and Spring Boot 3.2
+- React, TypeScript, Vite, and React Router
 - Spring Security, JWT access tokens, and rotating refresh tokens
 - Spring Data JPA and PostgreSQL 16
 - Flyway schema evolution from the original booking model
@@ -92,7 +93,7 @@ Requirements: Docker Desktop or another Docker Engine with Docker Compose 2.24 o
 docker compose up --build
 ```
 
-No Stripe account or `.env` file is required. Compose starts PostgreSQL and the API with the `dev` profile, loads representative marketplace data and normalized demo photos, and uses the mock payment gateway.
+No Stripe account or `.env` file is required. Compose starts PostgreSQL, the API, and the responsive web application. The API uses the `dev` profile, loads representative marketplace data and normalized demo photos, and uses the mock payment gateway.
 
 The default stack is deliberately local-only: PostgreSQL and the API bind to `127.0.0.1`, including when the `dev` profile is run directly outside Docker. Inside Compose the API listens on the container network, but its published host port remains loopback-only. The `dev` profile uses a public, development-only JWT signing key and logs a warning at startup. Never expose that profile or key outside a local machine. For a non-development Docker profile, provide a Base64-encoded `JWT_SECRET` that decodes to at least 32 random bytes through the shell or `.env`; the known development fallback is rejected whenever any non-development profile is active.
 
@@ -100,6 +101,7 @@ After startup:
 
 | Resource | URL |
 |---|---|
+| Web application | http://localhost:3000 |
 | Swagger UI | http://localhost:8080/swagger-ui/index.html |
 | OpenAPI document | http://localhost:8080/v3/api-docs |
 | Health check | http://localhost:8080/actuator/health |
@@ -108,7 +110,29 @@ After startup:
 
 Stop the stack with `docker compose down`. Add `-v` only when you intentionally want to remove both the local PostgreSQL and managed-image volumes and rebuild all development data.
 
-If either default host port is already in use, set `MARKETPLACE_DB_HOST_PORT` or `MARKETPLACE_API_HOST_PORT` before running Compose; the container-to-container ports and API configuration do not change.
+If a default host port is already in use, set `MARKETPLACE_WEB_HOST_PORT`, `MARKETPLACE_DB_HOST_PORT`, or `MARKETPLACE_API_HOST_PORT` before running Compose; the container-to-container ports and API configuration do not change.
+
+### Run the web application outside Docker
+
+The frontend lives in `frontend/` and proxies `/api` to `http://localhost:8080` during development:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open http://localhost:5173. Copy `frontend/.env.example` only when you need to override the API base URL or disable the offline demo fallback. Production builds should set `VITE_ENABLE_DEMO_FALLBACK=false` when an unavailable API must produce an explicit outage state instead of representative demo data.
+
+Frontend verification commands:
+
+```bash
+cd frontend
+npm test
+npm run build
+```
+
+As of August 2026, `npm audit` reports [GHSA-qwww-vcr4-c8h2](https://github.com/advisories/GHSA-qwww-vcr4-c8h2) against the latest published React Router 7 release. The advisory applies only to the unstable React Server Components APIs; this project uses the browser-only declarative router and does not enable those APIs. Downgrading to the audit-suggested 7.11.0 would reintroduce broader redirect and XSS advisories, so the frontend remains on the latest 7.x release until the upstream patched package is available.
 
 ### Run the API outside Docker
 
